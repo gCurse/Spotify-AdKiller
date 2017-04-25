@@ -407,10 +407,40 @@ automute_continuous(){
 }
 
 automute_simple(){
-    if [[ "$AD" = "0" ]]; then
-        unmute
-    elif [[ "$AD" = "1" ]]; then
-        mute
+    # no ad, first track
+    if [[ "$AD" = "0" && "$PAUSED" = "0" && "$ADMUTE" = "0" &&  \
+        "$INITIALRUN" = "1" ]]
+        then
+            echo "## Initial run ##"
+            unmute
+            record
+            INITIALRUN="0"
+
+    # no ad, regular track
+    elif [[ "$AD" = "0" && "$PAUSED" = "0" && "$ADMUTE" = "0" &&  \
+        "$INITIALRUN" = "0" ]]
+        then
+            echo "## Regular track ##"
+            record
+
+    # no ad, regular pause
+    elif [[ "$AD" = "0" && "$PAUSED" = "1" && "$ADMUTE" = "0" &&  \
+        "$INITIALRUN" = "0" ]]
+        then
+            echo "## Paused by User ##"
+            record stop
+
+    # ad finished
+    elif [[ "$AD" = "0" && "$PAUSED" = "0"  && "$ADMUTE" = "1" ]]
+        then
+            unmute
+            record
+
+    # ad started
+    elif [[ "$AD" = "1" && "$PAUSED" = "0"  && "$ADMUTE" = "0" ]]
+        then
+            mute
+            record stop
     fi
 }
 
@@ -456,6 +486,7 @@ automute_interstitial(){
       "$LOCPLAY" = "0" ]]
       then
           echo "## Switching to local playback ##"
+          record stop # record
           mute
           player Play "$LOOPOPT" > /dev/null 2>&1 &
           ALTPID="$!"
@@ -505,7 +536,11 @@ trap restore_settings EXIT
 
 # setup player, music directory, and volume
 setup_vars
-
+# Get script directory
+SCRIPTPATH=$(dirname $(readlink -f $0))
+# Sourcing helper scripts
+source $SCRIPTPATH/source-get-metadata.sh
+source $SCRIPTPATH/source-record.sh
 ## MAIN
 
 while read XPROPOUTPUT; do
@@ -513,11 +548,14 @@ while read XPROPOUTPUT; do
     get_state
 
     $automute
-
+    
     print_horiz_line
 
 done < <(xprop -spy -id "$WINDOWID" _NET_WM_NAME)
+
 # we use process substitution instead of piping
 # to avoid executing the loop in a subshell
 
 echo "Spotify not active. Exiting."
+echo "Killing record sessions (if any)"
+record stop
