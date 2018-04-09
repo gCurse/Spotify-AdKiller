@@ -26,13 +26,13 @@ record(){
     echo "Starting new registration ..."
     get_meta_all
 
-    ITEM_PATH="$CUSTOM_MUSIC/$ARTIST_NAME/$ALBUM_NAME"
+    ITEM_PATH="$CUSTOM_MUSIC/$ARTIST_NAME"
     ITEM_PATH=${ITEM_PATH// /_}     ## space -> underscore
-    ITEM_PATH=${ITEM_PATH//\'/_}    ## single quote -> underscore
+    #ITEM_PATH=${ITEM_PATH//\'/_}    ## single quote -> underscore
 
-    SONG_TITLE="${ARTIST_NAME}_-_${ALBUM_NAME}_-_${TRACK_NO}_-_${SONG_NAME}"
+    SONG_TITLE="${ARTIST_NAME}|${ALBUM_NAME}|${TRACK_NO}|${SONG_NAME}"
     SONG_TITLE=${SONG_TITLE// /_}   ## space -> underscore
-    SONG_TITLE=${SONG_TITLE//\'/_}  ## single quote -> underscore
+    #SONG_TITLE=${SONG_TITLE//\'/_}  ## single quote -> underscore
     SONG_TITLE=${SONG_TITLE//\//_}  ## slash -> underscore
     SONG_EXT="ogg"
 
@@ -41,7 +41,8 @@ record(){
     mkdir -p "$ITEM_PATH"
     record stop
 
-    if [[ -e ${FULL_ITEM_PATH}.${SONG_EXT} ]] && [[ $(stat -c%s $FULL_ITEM_PATH.$SONG_EXT) -gt 1800000 ]];
+    if [[ -e ${FULL_ITEM_PATH}.${SONG_EXT} ]] && \
+       [[ $(stat -c%s $FULL_ITEM_PATH.$SONG_EXT) -gt 1800000 ]];
     then
         echo "File exists. Stop."
         return 1
@@ -49,8 +50,8 @@ record(){
     echo "Recording started: ${FULL_ITEM_PATH}.${SONG_EXT} ..."
     #$ARECORD -d $SONG_LEN $ARECORD_FLAGS | flac - $FLAC_OPTS -o "$FULL_ITEM_PATH" &
     ($ARECORD -d ${SONG_LEN} ${ARECORD_FLAGS} | \
-    oggenc - --tracknum "${TRACK_NO}" --artist "${ARTIST_NAME}" --album "${ALBUM_NAME}" --title "${SONG_NAME}" -o "${FULL_ITEM_PATH}.${SONG_EXT}" && \
-    vorbisgain "${FULL_ITEM_PATH}.${SONG_EXT}" && echo) &
+    oggenc - --tracknum "${TRACK_NO}" --artist "${ARTIST_NAME}" \
+             --album "${ALBUM_NAME}" --title "${SONG_NAME}" \
+             -o "${FULL_ITEM_PATH}.${SONG_EXT}" && \
+             vorbisgain "${FULL_ITEM_PATH}.${SONG_EXT}" && echo) &
 }
-
-# dbus-send --print-reply --session --dest=org.mpris.MediaPlayer2.spotify /org/mpris/MediaPlayer2 org.freedesktop.DBus.Properties.Get string:'org.mpris.MediaPlayer2.Player' string:'Metadata'
