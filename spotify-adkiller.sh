@@ -433,6 +433,8 @@ automute_simple(){
     # ad finished
     elif [[ "$AD" = "0" && "$PAUSED" = "0"  && "$ADMUTE" = "1" ]]
         then
+            sleep $AD_UNMUTE_DELAY # ad unmute delay
+            spotify_dbus Previous # ad unmute delay
             unmute
             record
 
