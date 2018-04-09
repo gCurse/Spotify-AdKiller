@@ -30,7 +30,7 @@ record(){
     ITEM_PATH=${ITEM_PATH// /_}     ## space -> underscore
     #ITEM_PATH=${ITEM_PATH//\'/_}    ## single quote -> underscore
 
-    SONG_TITLE="${ARTIST_NAME}|${ALBUM_NAME}|${TRACK_NO}|${SONG_NAME}"
+    SONG_TITLE="${ARTIST_NAME}--${ALBUM_NAME}--${TRACK_NO}--${SONG_NAME}"
     SONG_TITLE=${SONG_TITLE// /_}   ## space -> underscore
     #SONG_TITLE=${SONG_TITLE//\'/_}  ## single quote -> underscore
     SONG_TITLE=${SONG_TITLE//\//_}  ## slash -> underscore
